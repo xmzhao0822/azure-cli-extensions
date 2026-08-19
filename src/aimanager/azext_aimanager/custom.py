@@ -6,13 +6,18 @@
 import os
 
 from azure.cli.core.azclierror import ClientRequestError, InvalidArgumentValueError
+from azure.cli.core.commands import LongRunningOperation
+from azure.cli.core.commands.client_factory import get_subscription_id
 from azure.cli.core.util import sdk_no_wait
 from azure.core import MatchConditions
 from azure.core.exceptions import ResourceNotFoundError
+from azure.mgmt.core.tools import resource_id
 from knack.log import get_logger
 from knack.util import CLIError
 
 from azext_aimanager._client_factory import CUSTOM_MGMT_AIMANAGER
+from azext_aimanager.constants import AIMANAGER_CALLER_ROLES, NAMESPACE_CALLER_ROLES
+from azext_aimanager._rbac import add_caller_role_assignments
 from azext_aimanager._helpers import (
     get_aks_custom_headers,
     parse_key_value_list,
@@ -31,6 +36,28 @@ def _get_model(cmd, name, operation_group):
 
 
 # region AI Manager
+
+def _aimanager_resource_id(cli_ctx, resource_group_name, ai_manager_name):
+    return resource_id(
+        subscription=get_subscription_id(cli_ctx),
+        resource_group=resource_group_name,
+        namespace="Microsoft.ContainerService",
+        type="aiManagers",
+        name=ai_manager_name,
+    )
+
+
+def _namespace_resource_id(cli_ctx, resource_group_name, ai_manager_name, namespace_name):
+    return resource_id(
+        subscription=get_subscription_id(cli_ctx),
+        resource_group=resource_group_name,
+        namespace="Microsoft.ContainerService",
+        type="aiManagers",
+        name=ai_manager_name,
+        child_type_1="namespaces",
+        child_name_1=namespace_name,
+    )
+
 
 def _construct_aimanager(cmd, location, tags, delete_policy, identity=None):
     ai_manager_properties_model = _get_model(cmd, "AIManagerProperties", "ai_managers")
@@ -68,7 +95,7 @@ def create_aimanager(cmd,
     headers = get_aks_custom_headers(aks_custom_headers)
     ai_manager = _construct_aimanager(cmd, location, tags, delete_policy)
 
-    return sdk_no_wait(
+    poller = sdk_no_wait(
         no_wait,
         client.begin_create_or_update,
         resource_group_name,
@@ -76,6 +103,15 @@ def create_aimanager(cmd,
         ai_manager,
         headers=headers,
     )
+
+    if no_wait:
+        scope = _aimanager_resource_id(cmd.cli_ctx, resource_group_name, ai_manager_name)
+        add_caller_role_assignments(cmd.cli_ctx, scope, AIMANAGER_CALLER_ROLES)
+        return poller
+
+    result = LongRunningOperation(cmd.cli_ctx)(poller)
+    add_caller_role_assignments(cmd.cli_ctx, result.id, AIMANAGER_CALLER_ROLES)
+    return result
 
 
 # pylint: disable=unused-argument
@@ -213,7 +249,7 @@ def add_aimanager_namespace(cmd,
     namespace_config = _construct_namespace(
         cmd, parse_key_value_list(labels), parse_key_value_list(annotations))
 
-    return sdk_no_wait(
+    poller = sdk_no_wait(
         no_wait,
         client.begin_create_or_update,
         resource_group_name,
@@ -222,6 +258,15 @@ def add_aimanager_namespace(cmd,
         namespace_config,
         headers=headers,
     )
+
+    if no_wait:
+        scope = _namespace_resource_id(cmd.cli_ctx, resource_group_name, ai_manager_name, namespace_name)
+        add_caller_role_assignments(cmd.cli_ctx, scope, NAMESPACE_CALLER_ROLES)
+        return poller
+
+    result = LongRunningOperation(cmd.cli_ctx)(poller)
+    add_caller_role_assignments(cmd.cli_ctx, result.id, NAMESPACE_CALLER_ROLES)
+    return result
 
 
 # pylint: disable=unused-argument
