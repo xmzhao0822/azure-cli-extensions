@@ -23,3 +23,10 @@ CALCULATE_COST_TABLE_TRANSFORMER = (
 
 # Supported model source types for an AI Manager model source.
 MODEL_SOURCE_TYPES = ["HuggingFace"]
+
+# Built-in roles assigned to the caller when an AI Manager or namespace is created.
+# 'Azure AIManager Contributor' is an ARM (control-plane) RBAC role, while
+# 'Azure AIManager and namespace RBAC Reader' is a Kubernetes (data-plane) RBAC role.
+AIMANAGER_CONTRIBUTOR_ROLE = "Azure AIManager Contributor"
+AIMANAGER_NAMESPACE_READER_ROLE = "Azure AIManager and namespace RBAC Reader"
+DEFAULT_CALLER_ROLES = [AIMANAGER_CONTRIBUTOR_ROLE, AIMANAGER_NAMESPACE_READER_ROLE]

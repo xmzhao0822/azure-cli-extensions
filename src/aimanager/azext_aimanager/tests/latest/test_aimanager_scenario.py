@@ -22,7 +22,8 @@ class AIManagerScenarioTest(ScenarioTest):
 
         # create
         self.cmd(
-            'aimanager create -g {rg} -n {ai_manager_name} -l {location} --delete-policy Keep',
+            'aimanager create -g {rg} -n {ai_manager_name} -l {location} --delete-policy Keep '
+            '--skip-role-assignments',
             checks=[
                 self.check('name', '{ai_manager_name}'),
                 self.check('location', '{location}'),
@@ -60,7 +61,7 @@ class AIManagerScenarioTest(ScenarioTest):
         # add
         self.cmd(
             'aimanager namespace add -g {rg} -m {ai_manager_name} -n {namespace_name} '
-            '--labels team=alpha --annotations owner=alice',
+            '--labels team=alpha --annotations owner=alice --skip-role-assignments',
             checks=[
                 self.check('name', '{namespace_name}'),
                 self.check('properties.labels.team', 'alpha'),

@@ -15,11 +15,17 @@ helps['aimanager'] = """
 helps['aimanager create'] = """
     type: command
     short-summary: Create an AI Manager resource.
+    long-summary: >
+        On successful creation, the current CLI account is granted the 'Azure AIManager Contributor'
+        (ARM RBAC) and 'Azure AIManager and namespace RBAC Reader' (Kubernetes RBAC) roles on the new
+        AI Manager. Pass --skip-role-assignments to manage these role assignments yourself.
     examples:
         - name: Create an AI Manager
           text: az aimanager create --name my-ai-manager -g myrg -l eastus2
         - name: Create an AI Manager with the Keep delete policy
           text: az aimanager create --name my-ai-manager -g myrg -l eastus2 --delete-policy Keep
+        - name: Create an AI Manager without the default caller role assignments
+          text: az aimanager create --name my-ai-manager -g myrg -l eastus2 --skip-role-assignments
 """
 
 helps['aimanager update'] = """
@@ -145,11 +151,17 @@ helps['aimanager namespace'] = """
 helps['aimanager namespace add'] = """
     type: command
     short-summary: Add a namespace to an AI Manager.
+    long-summary: >
+        On successful creation, the current CLI account is granted the 'Azure AIManager Contributor'
+        (ARM RBAC) and 'Azure AIManager and namespace RBAC Reader' (Kubernetes RBAC) roles on the new
+        namespace. Pass --skip-role-assignments to manage these role assignments yourself.
     examples:
         - name: Add a namespace
           text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha
         - name: Add a namespace with labels and annotations
           text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha --labels team=alpha --annotations owner=alice
+        - name: Add a namespace without the default caller role assignments
+          text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha --skip-role-assignments
 """
 
 helps['aimanager namespace update'] = """
