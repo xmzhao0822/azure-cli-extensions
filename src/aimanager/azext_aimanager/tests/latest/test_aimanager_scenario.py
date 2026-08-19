@@ -3,15 +3,21 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+from unittest import mock
+
 from azure.cli.testsdk import (ScenarioTest, ResourceGroupPreparer)
 from azure.cli.testsdk.scenario_tests import AllowLargeResponse
 
 
 class AIManagerScenarioTest(ScenarioTest):
 
+    # Role assignments (Graph lookup + roleAssignments PUT) are covered by the unit tests in
+    # test_aimanager_rbac.py. They are patched out here so this CRUD scenario stays deterministic
+    # and does not require recording non-deterministic RBAC calls.
     @AllowLargeResponse(size_kb=9999)
     @ResourceGroupPreparer(name_prefix='cli-aimgr-', random_name_length=16, location='eastus2')
-    def test_aimanager(self):
+    @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
+    def test_aimanager(self, _mock_role_assignments):
         self.kwargs.update({
             'ai_manager_name': self.create_random_name(prefix='aim', length=12),
             'namespace_name': self.create_random_name(prefix='aimns', length=12),
