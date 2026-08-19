@@ -20,8 +20,21 @@ class _FakeResult:
         self.id = resource_id
 
 
+class TestCallerRoleConstants(unittest.TestCase):
+    """The two commands assign different role sets on their respective scope."""
+
+    def test_aimanager_roles_contain_both_roles(self):
+        self.assertEqual(
+            AIMANAGER_CALLER_ROLES,
+            [AIMANAGER_CONTRIBUTOR_ROLE, AIMANAGER_NAMESPACE_READER_ROLE])
+
+    def test_namespace_roles_contain_reader_only(self):
+        self.assertEqual(NAMESPACE_CALLER_ROLES, [AIMANAGER_NAMESPACE_READER_ROLE])
+        self.assertNotIn(AIMANAGER_CONTRIBUTOR_ROLE, NAMESPACE_CALLER_ROLES)
+
+
 class TestCreateRoleAssignments(unittest.TestCase):
-    """Verify create/add commands assign the default caller roles on success."""
+    """create/add always assign the caller roles, whether or not --no-wait is used."""
 
     def setUp(self):
         self.cmd = mock.MagicMock()
@@ -30,14 +43,7 @@ class TestCreateRoleAssignments(unittest.TestCase):
         from azure.core.exceptions import ResourceNotFoundError
         self.client.get.side_effect = ResourceNotFoundError("not found")
 
-    def test_default_roles_contain_both_roles(self):
-        self.assertEqual(
-            AIMANAGER_CALLER_ROLES,
-            [AIMANAGER_CONTRIBUTOR_ROLE, AIMANAGER_NAMESPACE_READER_ROLE])
-
-    def test_namespace_roles_contain_reader_only(self):
-        self.assertEqual(NAMESPACE_CALLER_ROLES, [AIMANAGER_NAMESPACE_READER_ROLE])
-        self.assertNotIn(AIMANAGER_CONTRIBUTOR_ROLE, NAMESPACE_CALLER_ROLES)
+    # region create
 
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
@@ -52,31 +58,30 @@ class TestCreateRoleAssignments(unittest.TestCase):
         self.assertEqual(result.id, scope)
         mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, AIMANAGER_CALLER_ROLES)
 
+    @mock.patch('azext_aimanager.custom._aimanager_resource_id')
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
     @mock.patch('azext_aimanager.custom._construct_aimanager')
-    def test_create_skips_roles_when_requested(self, mock_construct, mock_lro, mock_assign):
-        mock_lro.return_value.return_value = _FakeResult('id')
+    def test_create_assigns_roles_with_no_wait(self, mock_construct, mock_lro, mock_assign, mock_id):
+        scope = '/subscriptions/s/resourceGroups/rg/providers/Microsoft.ContainerService/aiManagers/aim'
+        mock_id.return_value = scope
 
-        custom.create_aimanager(
-            self.cmd, self.client, 'rg', 'aim', location='eastus2', skip_role_assignments=True)
-
-        mock_assign.assert_not_called()
-
-    @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
-    @mock.patch('azext_aimanager.custom.LongRunningOperation')
-    @mock.patch('azext_aimanager.custom._construct_aimanager')
-    def test_create_skips_roles_when_no_wait(self, mock_construct, mock_lro, mock_assign):
         custom.create_aimanager(
             self.cmd, self.client, 'rg', 'aim', location='eastus2', no_wait=True)
 
-        mock_assign.assert_not_called()
+        # The LRO is not awaited, but roles are still assigned using the constructed scope.
         mock_lro.assert_not_called()
+        mock_id.assert_called_once_with(self.cmd.cli_ctx, 'rg', 'aim')
+        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, AIMANAGER_CALLER_ROLES)
+
+    # endregion
+
+    # region namespace add
 
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
     @mock.patch('azext_aimanager.custom._construct_namespace')
-    def test_namespace_add_assigns_roles_on_namespace_scope(self, mock_construct, mock_lro, mock_assign):
+    def test_namespace_add_assigns_reader_on_namespace_scope(self, mock_construct, mock_lro, mock_assign):
         scope = ('/subscriptions/s/resourceGroups/rg/providers/Microsoft.ContainerService/'
                  'aiManagers/aim/namespaces/ns')
         mock_lro.return_value.return_value = _FakeResult(scope)
@@ -87,26 +92,23 @@ class TestCreateRoleAssignments(unittest.TestCase):
         self.assertEqual(result.id, scope)
         mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, NAMESPACE_CALLER_ROLES)
 
+    @mock.patch('azext_aimanager.custom._namespace_resource_id')
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
     @mock.patch('azext_aimanager.custom._construct_namespace')
-    def test_namespace_add_skips_roles_when_requested(self, mock_construct, mock_lro, mock_assign):
-        mock_lro.return_value.return_value = _FakeResult('id')
+    def test_namespace_add_assigns_reader_with_no_wait(self, mock_construct, mock_lro, mock_assign, mock_id):
+        scope = ('/subscriptions/s/resourceGroups/rg/providers/Microsoft.ContainerService/'
+                 'aiManagers/aim/namespaces/ns')
+        mock_id.return_value = scope
 
-        custom.add_aimanager_namespace(
-            self.cmd, self.client, 'rg', 'aim', 'ns', skip_role_assignments=True)
-
-        mock_assign.assert_not_called()
-
-    @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
-    @mock.patch('azext_aimanager.custom.LongRunningOperation')
-    @mock.patch('azext_aimanager.custom._construct_namespace')
-    def test_namespace_add_skips_roles_when_no_wait(self, mock_construct, mock_lro, mock_assign):
         custom.add_aimanager_namespace(
             self.cmd, self.client, 'rg', 'aim', 'ns', no_wait=True)
 
-        mock_assign.assert_not_called()
         mock_lro.assert_not_called()
+        mock_id.assert_called_once_with(self.cmd.cli_ctx, 'rg', 'aim', 'ns')
+        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, NAMESPACE_CALLER_ROLES)
+
+    # endregion
 
 
 if __name__ == '__main__':

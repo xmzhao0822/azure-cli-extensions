@@ -7,9 +7,11 @@ import os
 
 from azure.cli.core.azclierror import ClientRequestError, InvalidArgumentValueError
 from azure.cli.core.commands import LongRunningOperation
+from azure.cli.core.commands.client_factory import get_subscription_id
 from azure.cli.core.util import sdk_no_wait
 from azure.core import MatchConditions
 from azure.core.exceptions import ResourceNotFoundError
+from azure.mgmt.core.tools import resource_id
 from knack.log import get_logger
 from knack.util import CLIError
 
@@ -35,6 +37,28 @@ def _get_model(cmd, name, operation_group):
 
 # region AI Manager
 
+def _aimanager_resource_id(cli_ctx, resource_group_name, ai_manager_name):
+    return resource_id(
+        subscription=get_subscription_id(cli_ctx),
+        resource_group=resource_group_name,
+        namespace="Microsoft.ContainerService",
+        type="aiManagers",
+        name=ai_manager_name,
+    )
+
+
+def _namespace_resource_id(cli_ctx, resource_group_name, ai_manager_name, namespace_name):
+    return resource_id(
+        subscription=get_subscription_id(cli_ctx),
+        resource_group=resource_group_name,
+        namespace="Microsoft.ContainerService",
+        type="aiManagers",
+        name=ai_manager_name,
+        child_type_1="namespaces",
+        child_name_1=namespace_name,
+    )
+
+
 def _construct_aimanager(cmd, location, tags, delete_policy, identity=None):
     ai_manager_properties_model = _get_model(cmd, "AIManagerProperties", "ai_managers")
     ai_manager_model = _get_model(cmd, "AIManager", "ai_managers")
@@ -57,7 +81,6 @@ def create_aimanager(cmd,
                      tags=None,
                      delete_policy=None,
                      aks_custom_headers=None,
-                     skip_role_assignments=False,
                      no_wait=False):
     existing = None
     try:
@@ -82,11 +105,12 @@ def create_aimanager(cmd,
     )
 
     if no_wait:
+        scope = _aimanager_resource_id(cmd.cli_ctx, resource_group_name, ai_manager_name)
+        add_caller_role_assignments(cmd.cli_ctx, scope, AIMANAGER_CALLER_ROLES)
         return poller
 
     result = LongRunningOperation(cmd.cli_ctx)(poller)
-    if not skip_role_assignments:
-        add_caller_role_assignments(cmd.cli_ctx, result.id, AIMANAGER_CALLER_ROLES)
+    add_caller_role_assignments(cmd.cli_ctx, result.id, AIMANAGER_CALLER_ROLES)
     return result
 
 
@@ -210,7 +234,6 @@ def add_aimanager_namespace(cmd,
                             labels=None,
                             annotations=None,
                             aks_custom_headers=None,
-                            skip_role_assignments=False,
                             no_wait=False):
     existing = None
     try:
@@ -237,11 +260,12 @@ def add_aimanager_namespace(cmd,
     )
 
     if no_wait:
+        scope = _namespace_resource_id(cmd.cli_ctx, resource_group_name, ai_manager_name, namespace_name)
+        add_caller_role_assignments(cmd.cli_ctx, scope, NAMESPACE_CALLER_ROLES)
         return poller
 
     result = LongRunningOperation(cmd.cli_ctx)(poller)
-    if not skip_role_assignments:
-        add_caller_role_assignments(cmd.cli_ctx, result.id, NAMESPACE_CALLER_ROLES)
+    add_caller_role_assignments(cmd.cli_ctx, result.id, NAMESPACE_CALLER_ROLES)
     return result
 
 
