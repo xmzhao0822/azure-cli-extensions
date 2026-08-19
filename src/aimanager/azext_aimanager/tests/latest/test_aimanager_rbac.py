@@ -10,7 +10,8 @@ from azext_aimanager import custom
 from azext_aimanager.constants import (
     AIMANAGER_CONTRIBUTOR_ROLE,
     AIMANAGER_NAMESPACE_READER_ROLE,
-    DEFAULT_CALLER_ROLES,
+    AIMANAGER_CALLER_ROLES,
+    NAMESPACE_CALLER_ROLES,
 )
 
 
@@ -31,8 +32,12 @@ class TestCreateRoleAssignments(unittest.TestCase):
 
     def test_default_roles_contain_both_roles(self):
         self.assertEqual(
-            DEFAULT_CALLER_ROLES,
+            AIMANAGER_CALLER_ROLES,
             [AIMANAGER_CONTRIBUTOR_ROLE, AIMANAGER_NAMESPACE_READER_ROLE])
+
+    def test_namespace_roles_contain_reader_only(self):
+        self.assertEqual(NAMESPACE_CALLER_ROLES, [AIMANAGER_NAMESPACE_READER_ROLE])
+        self.assertNotIn(AIMANAGER_CONTRIBUTOR_ROLE, NAMESPACE_CALLER_ROLES)
 
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
@@ -45,7 +50,7 @@ class TestCreateRoleAssignments(unittest.TestCase):
             self.cmd, self.client, 'rg', 'aim', location='eastus2')
 
         self.assertEqual(result.id, scope)
-        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, DEFAULT_CALLER_ROLES)
+        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, AIMANAGER_CALLER_ROLES)
 
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')
@@ -80,7 +85,7 @@ class TestCreateRoleAssignments(unittest.TestCase):
             self.cmd, self.client, 'rg', 'aim', 'ns')
 
         self.assertEqual(result.id, scope)
-        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, DEFAULT_CALLER_ROLES)
+        mock_assign.assert_called_once_with(self.cmd.cli_ctx, scope, NAMESPACE_CALLER_ROLES)
 
     @mock.patch('azext_aimanager.custom.add_caller_role_assignments')
     @mock.patch('azext_aimanager.custom.LongRunningOperation')

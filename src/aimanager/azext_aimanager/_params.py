@@ -108,9 +108,9 @@ def load_arguments(self, _):
 
     with self.argument_context('aimanager namespace add') as c:
         c.argument('skip_role_assignments', options_list=['--skip-role-assignments'], action='store_true',
-                   help="Skip creating the default 'Azure AIManager Contributor' and 'Azure AIManager and "
-                        "namespace RBAC Reader' role assignments for the current CLI account on the new "
-                        "namespace. Use this if you want to manage role assignments yourself.")
+                   help="Skip creating the default 'Azure AIManager and namespace RBAC Reader' role "
+                        "assignment for the current CLI account on the new namespace. Use this if you want "
+                        "to manage role assignments yourself.")
 
     with self.argument_context('aimanager namespace get-credentials') as c:
         c.argument('path', options_list=['--file', '-f'],

@@ -14,7 +14,7 @@ from knack.log import get_logger
 from knack.util import CLIError
 
 from azext_aimanager._client_factory import CUSTOM_MGMT_AIMANAGER
-from azext_aimanager.constants import DEFAULT_CALLER_ROLES
+from azext_aimanager.constants import AIMANAGER_CALLER_ROLES, NAMESPACE_CALLER_ROLES
 from azext_aimanager._rbac import add_caller_role_assignments
 from azext_aimanager._helpers import (
     get_aks_custom_headers,
@@ -86,7 +86,7 @@ def create_aimanager(cmd,
 
     result = LongRunningOperation(cmd.cli_ctx)(poller)
     if not skip_role_assignments:
-        add_caller_role_assignments(cmd.cli_ctx, result.id, DEFAULT_CALLER_ROLES)
+        add_caller_role_assignments(cmd.cli_ctx, result.id, AIMANAGER_CALLER_ROLES)
     return result
 
 
@@ -241,7 +241,7 @@ def add_aimanager_namespace(cmd,
 
     result = LongRunningOperation(cmd.cli_ctx)(poller)
     if not skip_role_assignments:
-        add_caller_role_assignments(cmd.cli_ctx, result.id, DEFAULT_CALLER_ROLES)
+        add_caller_role_assignments(cmd.cli_ctx, result.id, NAMESPACE_CALLER_ROLES)
     return result
 
 

@@ -152,15 +152,16 @@ helps['aimanager namespace add'] = """
     type: command
     short-summary: Add a namespace to an AI Manager.
     long-summary: >
-        On successful creation, the current CLI account is granted the 'Azure AIManager Contributor'
-        (ARM RBAC) and 'Azure AIManager and namespace RBAC Reader' (Kubernetes RBAC) roles on the new
-        namespace. Pass --skip-role-assignments to manage these role assignments yourself.
+        On successful creation, the current CLI account is granted the 'Azure AIManager and namespace
+        RBAC Reader' (Kubernetes RBAC) role on the new namespace. The 'Azure AIManager Contributor' role
+        is not assigned here because it is already inherited from the AI Manager scope. Pass
+        --skip-role-assignments to manage this role assignment yourself.
     examples:
         - name: Add a namespace
           text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha
         - name: Add a namespace with labels and annotations
           text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha --labels team=alpha --annotations owner=alice
-        - name: Add a namespace without the default caller role assignments
+        - name: Add a namespace without the default caller role assignment
           text: az aimanager namespace add -m my-ai-manager -g myrg --name team-alpha --skip-role-assignments
 """
 
