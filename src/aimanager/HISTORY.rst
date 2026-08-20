@@ -3,6 +3,12 @@
 Release History
 ===============
 
+1.5.1
+++++++
+* ``az aimanager model list`` and ``az aimanager model show``: Rename the table output columns
+  to ``ID`` (was ``Name``), ``Qualified Name`` (was ``ModelId``) and ``Location`` (was
+  ``Description``).
+
 1.5.0
 ++++++
 * ``az aimanager create`` and ``az aimanager namespace add``: On success, grant the caller the
