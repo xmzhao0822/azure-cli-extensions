@@ -22,7 +22,7 @@ MODEL_DEPLOYMENT_PERFORMANCE_MODES = ["Balanced", "Latency", "Throughput"]
 
 # Table output projections for the 'az aimanager model' commands.
 AI_MODEL_TABLE_TRANSFORMER = (
-    "[].{Name:name, ModelId:properties.modelId, Description:properties.description}"
+    '[].{"ID":name, "Qualified Name":properties.modelId, "Location":properties.description}'
 )
 
 CALCULATE_COST_TABLE_TRANSFORMER = (
