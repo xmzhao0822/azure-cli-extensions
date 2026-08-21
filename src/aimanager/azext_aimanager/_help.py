@@ -296,16 +296,20 @@ helps['aimanager model'] = """
     short-summary: Browse the AI model catalog and estimate deployment cost.
     long-summary: |-
         AI models are read-only, platform-maintained catalog entries scoped to an Azure region.
-        Use 'az aimanager model list' to discover the models available in a region and their
-        resource names, which can then be passed to
-        'az aimanager namespace modeldeployment add --model-resource-id'.
+        Use 'az aimanager model list' to discover the models available in a region. Each model can
+        be referenced either by its human-readable model ID (the '<org>/<repo>' value shown in the
+        'ModelId' column, e.g. 'microsoft/Phi-4-mini-instruct') or by its opaque resource name (the
+        'Name' column). The resource name is what 'az aimanager namespace modeldeployment add
+        --model-resource-id' expects.
 """
 
 helps['aimanager model show'] = """
     type: command
     short-summary: Show the details of an AI model in the catalog.
     examples:
-        - name: Show an AI model
+        - name: Show an AI model by its human-readable model ID
+          text: az aimanager model show -l eastus2 --model-id microsoft/Phi-4-mini-instruct
+        - name: Show an AI model by its opaque resource name
           text: az aimanager model show -l eastus2 -n 9806f0c862fdd920
 """
 
@@ -329,8 +333,8 @@ helps['aimanager model calculate-cost'] = """
         No Azure or Kubernetes resources are provisioned by this command. Prices describe a single
         replica; multiply by the desired replica count, bounded by maxAvailableReplicas.
     examples:
-        - name: Calculate the cost of deploying a model
-          text: az aimanager model calculate-cost -l eastus2 -n 9806f0c862fdd920
-        - name: Show the pricing plans as a table
+        - name: Calculate the cost of deploying a model by its human-readable model ID
+          text: az aimanager model calculate-cost -l eastus2 --model-id microsoft/Phi-4-mini-instruct
+        - name: Show the pricing plans as a table by opaque resource name
           text: az aimanager model calculate-cost -l eastus2 -n 9806f0c862fdd920 -o table
 """

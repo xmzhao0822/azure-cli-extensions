@@ -158,10 +158,11 @@ def load_arguments(self, _):
     with self.argument_context('aimanager model') as c:
         c.argument('location', arg_type=get_location_type(self.cli_ctx), required=True,
                    help='The Azure region hosting the AI model catalog.')
-        c.argument('ai_model_name', options_list=['--name', '-n'],
+        c.argument('ai_model_name', options_list=['--name', '-n', '--model-id'],
                    validator=validate_ai_model_name,
-                   help='The name of the AI model. This is an opaque, stable identifier derived '
-                        'from the model ID; use "az aimanager model list" to discover it.')
+                   help='The AI model to target. Accepts either the human-readable model ID in '
+                        '"<org>/<repo>" form (e.g. "microsoft/Phi-4-mini-instruct") or the opaque '
+                        'resource name shown as "Name" by "az aimanager model list".')
 
     with self.argument_context('aimanager model list') as c:
         c.ignore('ai_model_name')
