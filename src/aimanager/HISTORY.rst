@@ -3,6 +3,15 @@
 Release History
 ===============
 
+1.6.0
+++++++
+* ``az aimanager model show`` and ``az aimanager model calculate-cost``: Accept the human-readable
+  model ID in ``<org>/<repo>`` form (e.g. ``microsoft/Phi-4-mini-instruct``) via ``--model-id`` /
+  ``--name`` / ``-n``, in addition to the opaque resource name. The resource name is resolved
+  client-side, so no extra service calls are needed in the common case.
+* ``az aimanager model list -o table``: Show the ``ModelId`` column first so the human-readable
+  model ID is the primary identifier.
+
 1.5.0
 ++++++
 * ``az aimanager create`` and ``az aimanager namespace add``: On success, grant the caller the

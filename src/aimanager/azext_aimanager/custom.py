@@ -3,6 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import hashlib
 import os
 
 from azure.cli.core.azclierror import ClientRequestError, InvalidArgumentValueError
@@ -626,8 +627,57 @@ def delete_modeldeployment(cmd, client, resource_group_name, ai_manager_name, na
 
 # region AI model
 
+def _model_name_from_model_id(model_id):
+    """Derive the AI model resource name from its human-readable model ID.
+
+    The resource provider defines the resource name as the lowercase hex of the
+    first 8 bytes of SHA-256(modelId). This encoding is a permanent contract of
+    the RP and does not depend on any upstream (e.g. Hugging Face) naming policy,
+    so it is safe to compute client-side and avoids an extra network round-trip.
+    """
+    digest = hashlib.sha256(model_id.strip().encode("utf-8")).digest()
+    return digest[:8].hex()
+
+
+def _find_model_name_by_model_id(client, location, model_id):
+    """Resolve a model ID to a resource name by scanning the regional catalog.
+
+    Used as a fallback when the caller's model ID differs in casing or spacing
+    from the canonical value, so the derived hash does not match directly.
+    """
+    target = model_id.strip().lower()
+    for model in client.list(location):
+        properties = getattr(model, "properties", None)
+        model_id_value = getattr(properties, "model_id", None) if properties else None
+        if model_id_value and model_id_value.strip().lower() == target:
+            return model.name
+    return None
+
+
+def _resolve_ai_model(client, location, name_or_model_id, fetch):
+    """Invoke `fetch(resource_name)` for either form of model reference.
+
+    `name_or_model_id` may be the opaque resource name (as shown by
+    'az aimanager model list') or the human-readable model ID in '<org>/<repo>'
+    form (e.g. 'microsoft/Phi-4-mini-instruct'). A '/' disambiguates the model ID
+    form; anything else is treated as the resource name and passed through.
+    """
+    if "/" not in name_or_model_id:
+        return fetch(name_or_model_id)
+
+    try:
+        return fetch(_model_name_from_model_id(name_or_model_id))
+    except ResourceNotFoundError:
+        resolved = _find_model_name_by_model_id(client, location, name_or_model_id)
+        if resolved is None:
+            raise
+        return fetch(resolved)
+
+
 def show_aimodel(cmd, client, location, ai_model_name):  # pylint: disable=unused-argument
-    return client.get(location, ai_model_name)
+    return _resolve_ai_model(
+        client, location, ai_model_name,
+        lambda name: client.get(location, name))
 
 
 def list_aimodel(cmd, client, location):  # pylint: disable=unused-argument
@@ -636,6 +686,8 @@ def list_aimodel(cmd, client, location):  # pylint: disable=unused-argument
 
 def calculate_aimodel_cost(cmd, client, location, ai_model_name):
     request_model = _get_model(cmd, "CalculateCostRequest", "ai_models")
-    return client.calculate_cost(location, ai_model_name, request_model())
+    return _resolve_ai_model(
+        client, location, ai_model_name,
+        lambda name: client.calculate_cost(location, name, request_model()))
 
 # endregion
