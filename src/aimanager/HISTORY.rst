@@ -3,6 +3,10 @@
 Release History
 ===============
 
+1.5.2
+++++++
+* Refactor validation code to make the name validators consistent
+
 1.5.1
 ++++++
 * ``az aimanager create`` and ``az aimanager namespace add``: When the caller role grant is
