@@ -3,7 +3,7 @@
 Release History
 ===============
 
-1.5.2
+1.5.2b1
 ++++++
 * Refactor validation code to make the name validators consistent
 
