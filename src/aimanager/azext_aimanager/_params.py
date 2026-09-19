@@ -39,7 +39,7 @@ def load_arguments(self, _):
             c.argument('tags', arg_type=tags_type, help='The tags to set to the AI Manager.')
             c.argument('delete_policy', arg_type=get_enum_type(DELETE_POLICIES),
                        help='Delete options of the AI Manager. Defaults to Delete.')
-            c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+            c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                        help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager create') as c:
@@ -56,7 +56,7 @@ def load_arguments(self, _):
                    help='Overwrite any existing cluster entry with the same name.')
         c.argument('context_name',
                    help='If specified, overwrite the default context name.')
-        c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+        c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                    help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager modelsource') as c:
@@ -82,7 +82,7 @@ def load_arguments(self, _):
             c.argument('token',
                        help='Access token used by the platform to authenticate to the source. '
                             'Optional for public sources such as ungated Hugging Face models.')
-            c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+            c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                        help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager namespace') as c:
@@ -99,7 +99,7 @@ def load_arguments(self, _):
                        help='Space-separated labels (key=value) applied to the Kubernetes namespace.')
             c.argument('annotations', nargs='*', validator=validate_annotations,
                        help='Space-separated annotations (key=value) applied to the Kubernetes namespace.')
-            c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+            c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                        help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager namespace get-credentials') as c:
@@ -109,12 +109,12 @@ def load_arguments(self, _):
                    help='Overwrite any existing cluster entry with the same name.')
         c.argument('context_name',
                    help='If specified, overwrite the default context name.')
-        c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+        c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                    help='Comma-separated key=value pairs to specify custom headers.')
 
     for scope in ['aimanager namespace list-accesskeys', 'aimanager namespace rotate-accesskeys']:
         with self.argument_context(scope) as c:
-            c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+            c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                        help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager namespace modeldeployment') as c:
@@ -156,7 +156,7 @@ def load_arguments(self, _):
                        help='Maximum autoscale replica count.')
             c.argument('overrides', nargs='*', validator=validate_overrides,
                        help='Space-separated experimental deployment overrides (key=value).')
-            c.argument('aks_custom_headers', options_list=['--aks-custom-headers'],
+            c.argument('aimanager_custom_header', options_list=['--aimanager-custom-header'],
                        help='Comma-separated key=value pairs to specify custom headers.')
 
     with self.argument_context('aimanager model') as c:

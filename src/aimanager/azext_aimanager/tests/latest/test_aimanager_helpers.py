@@ -11,7 +11,7 @@ import yaml
 from knack.util import CLIError
 from azext_aimanager._helpers import (
     parse_key_value_list,
-    get_aks_custom_headers,
+    get_aimanager_custom_header,
     print_or_merge_credentials,
 )
 
@@ -31,18 +31,18 @@ class TestAIManagerHelpers(unittest.TestCase):
         with self.assertRaises(CLIError):
             parse_key_value_list(["invalid"])
 
-    def test_get_aks_custom_headers_empty(self):
-        self.assertEqual(get_aks_custom_headers(None), {})
-        self.assertEqual(get_aks_custom_headers(""), {})
+    def test_get_aimanager_custom_header_empty(self):
+        self.assertEqual(get_aimanager_custom_header(None), {})
+        self.assertEqual(get_aimanager_custom_header(""), {})
 
-    def test_get_aks_custom_headers_pairs(self):
+    def test_get_aimanager_custom_header_pairs(self):
         self.assertEqual(
-            get_aks_custom_headers("a=1,b=2"),
+            get_aimanager_custom_header("a=1,b=2"),
             {"a": "1", "b": "2"})
 
-    def test_get_aks_custom_headers_invalid(self):
+    def test_get_aimanager_custom_header_invalid(self):
         with self.assertRaises(CLIError):
-            get_aks_custom_headers("badheader")
+            get_aimanager_custom_header("badheader")
 
 
 class TestAIManagerCredentials(unittest.TestCase):
