@@ -3,6 +3,11 @@
 Release History
 ===============
 
+1.5.6b1
+++++++
+* ``az aimanager``: Rename the ``--aks-custom-headers`` argument to
+  ``--aimanager-custom-header`` across all commands.
+
 1.5.5b1
 ++++++
 * ``az aimanager model calculate-cost``: Always show the ``Feasible`` column in ``-o table``
